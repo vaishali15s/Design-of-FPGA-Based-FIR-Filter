@@ -30,7 +30,7 @@ module top_wrapper (
     ) u_fir_filter (
         .clk(clk),
         .rst_n(rst_n),
-        .sample_valid(rx_dv),
+        .ce(rx_dv),
         .din(rx_data),
         .dout(filtered_out)
     );

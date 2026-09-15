@@ -37,7 +37,7 @@ module tb_fir_filter;
     ) uut (
         .clk(clk),
         .rst_n(rst_n),
-        .sample_valid(sample_valid),
+        .ce(sample_valid),
         .din(din),
         .dout(dout)
     );
