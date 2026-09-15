@@ -14,6 +14,7 @@ module top_wrapper_tb;
     wire filter_dv;
 
     integer filter_count;
+    integer ce_count;
     integer failures;
     reg waiting_for_filter;
 
@@ -30,6 +31,15 @@ module top_wrapper_tb;
     always #(FPGA_CLK_PERIOD_NS / 2) clk = ~clk;
 
     always @(posedge clk) begin
+        // Verify that each received-sample pulse reaches the FIR clock enable.
+        if (dut.u_fir_filter.ce !== filter_dv) begin
+            $display("ERROR: FIR ce does not match filter_dv at %0t ns", $time);
+            failures = failures + 1;
+        end
+
+        if (dut.u_fir_filter.ce)
+            ce_count = ce_count + 1;
+
         if (filter_dv) begin
             filter_count = filter_count + 1;
             if (^filtered_out === 1'bx) begin
@@ -79,6 +89,7 @@ module top_wrapper_tb;
         cs_n = 1'b1;
         mosi = 1'b0;
         filter_count = 0;
+        ce_count = 0;
         failures = 0;
         waiting_for_filter = 1'b0;
 
@@ -89,8 +100,9 @@ module top_wrapper_tb;
         send_word(16'h1000);
         send_word(16'hF000);
 
-        if (filter_count != 2) begin
+        if (filter_count != 2 || ce_count != 2) begin
             $display("ERROR: expected 2 filter_dv pulses, received %0d", filter_count);
+            $display("ERROR: expected 2 FIR ce pulses, received %0d", ce_count);
             failures = failures + 1;
         end
 
